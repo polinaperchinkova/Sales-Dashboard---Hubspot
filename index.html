@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Pipeline Dashboard — Data Masters</title>
+  <style>body{margin:0;background:#f0f0f0;}</style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.10.0/umd/Recharts.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+    const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+            LineChart, Line, Legend, ComposedChart } = Recharts;
+
+
+const ALL_DEALS = [
+  {stage:"690",amt:8000,prob:0.5,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-03-04"},
+  {stage:"690",amt:0,prob:0.5,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-26"},
+  {stage:"496",amt:18000,prob:0.1,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-25"},
+  {stage:"496",amt:18000,prob:0.1,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-25"},
+  {stage:"497",amt:50000,prob:0.2,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-24"},
+  {stage:"690",amt:12500,prob:0.5,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-16"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-11"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-11"},
+  {stage:"495",amt:5000,prob:0.02,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-11"},
+  {stage:"495",amt:5000,prob:0.02,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-11"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-11"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-11"},
+  {stage:"497",amt:50000,prob:0.2,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-10"},
+  {stage:"497",amt:63000,prob:0.2,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-10"},
+  {stage:"694",amt:35000,prob:0,won:false,lost:true,closedate:"2026-02-25",createdate:"2026-02-10"},
+  {stage:"497",amt:5000,prob:0.2,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-10"},
+  {stage:"497",amt:70000,prob:0.2,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-02-10"},
+  {stage:"693",amt:6000,prob:1,won:true,lost:false,closedate:"2026-02-20",createdate:"2026-02-10"},
+  {stage:"497",amt:37800,prob:0.2,won:false,lost:false,closedate:"2026-03-31",createdate:"2026-01-28"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2026-01-30",createdate:"2026-01-23"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2026-01-23",createdate:"2026-01-12"},
+  {stage:"690",amt:20000,prob:0.5,won:false,lost:false,closedate:"2026-01-20",createdate:"2026-01-05"},
+  {stage:"694",amt:80000,prob:0,won:false,lost:true,closedate:"2026-02-20",createdate:"2025-12-23"},
+  {stage:"497",amt:5000,prob:0.2,won:false,lost:false,closedate:"2026-01-31",createdate:"2025-12-19"},
+  {stage:"497",amt:15000,prob:0.2,won:false,lost:false,closedate:"2026-01-31",createdate:"2025-12-16"},
+  {stage:"690",amt:50000,prob:0.5,won:false,lost:false,closedate:"2026-01-31",createdate:"2025-12-16"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-01-31",createdate:"2025-12-12"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-01-31",createdate:"2025-12-09"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-01-31",createdate:"2025-12-05"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-01-31",createdate:"2025-12-05"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2026-01-29",createdate:"2025-12-05"},
+  {stage:"690",amt:5000,prob:0.5,won:false,lost:false,closedate:"2026-01-30",createdate:"2025-11-28"},
+  {stage:"495",amt:5000,prob:0.02,won:false,lost:false,closedate:"2026-05-15",createdate:"2025-11-20"},
+  {stage:"497",amt:40000,prob:0.2,won:false,lost:false,closedate:"2026-01-15",createdate:"2025-11-10"},
+  {stage:"497",amt:30000,prob:0.2,won:false,lost:false,closedate:"2026-01-07",createdate:"2025-11-06"},
+  {stage:"496",amt:30000,prob:0.1,won:false,lost:false,closedate:"2026-01-07",createdate:"2025-11-06"},
+  {stage:"693",amt:26400,prob:1,won:true,lost:false,closedate:"2025-12-16",createdate:"2025-11-06"},
+  {stage:"690",amt:18000,prob:0.5,won:false,lost:false,closedate:"2026-01-07",createdate:"2025-11-06"},
+  {stage:"690",amt:135000,prob:0.5,won:false,lost:false,closedate:"2026-04-03",createdate:"2025-11-06"},
+  {stage:"690",amt:40000,prob:0.5,won:false,lost:false,closedate:"2026-06-05",createdate:"2025-11-06"},
+  {stage:"690",amt:77400,prob:0.5,won:false,lost:false,closedate:"2026-01-07",createdate:"2025-11-06"},
+  {stage:"694",amt:72000,prob:0,won:false,lost:true,closedate:"2025-11-27",createdate:"2025-11-06"},
+  {stage:"690",amt:75600,prob:0.5,won:false,lost:false,closedate:"2026-01-07",createdate:"2025-11-06"},
+  {stage:"693",amt:37800,prob:1,won:true,lost:false,closedate:"2026-02-10",createdate:"2025-11-06"},
+  {stage:"693",amt:37800,prob:1,won:true,lost:false,closedate:"2026-02-10",createdate:"2025-11-06"},
+  {stage:"693",amt:26460,prob:1,won:true,lost:false,closedate:"2026-02-10",createdate:"2025-11-06"},
+  {stage:"693",amt:40000,prob:1,won:true,lost:false,closedate:"2026-02-10",createdate:"2025-11-06"},
+  {stage:"690",amt:30000,prob:0.5,won:false,lost:false,closedate:"2026-01-07",createdate:"2025-11-05"},
+  {stage:"497",amt:20000,prob:0.2,won:false,lost:false,closedate:"2025-10-15",createdate:"2025-10-16"},
+  {stage:"495",amt:5000,prob:0.02,won:false,lost:false,closedate:"2025-10-16",createdate:"2025-10-16"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-11-28",createdate:"2025-10-16"},
+  {stage:"693",amt:18130,prob:1,won:true,lost:false,closedate:"2025-11-30",createdate:"2025-10-02"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2026-01-30",createdate:"2025-10-02"},
+  {stage:"694",amt:24000,prob:0,won:false,lost:true,closedate:"2025-09-10",createdate:"2025-08-18"},
+  {stage:"693",amt:15960,prob:1,won:true,lost:false,closedate:"2025-10-02",createdate:"2025-08-18"},
+  {stage:"694",amt:24000,prob:0,won:false,lost:true,closedate:"2025-11-05",createdate:"2025-08-18"},
+  {stage:"693",amt:15680,prob:1,won:true,lost:false,closedate:"2025-09-10",createdate:"2025-08-18"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2025-11-05",createdate:"2025-08-08"},
+  {stage:"496",amt:12000,prob:0.1,won:false,lost:false,closedate:"2025-08-01",createdate:"2025-08-07"},
+  {stage:"496",amt:15000,prob:0.1,won:false,lost:false,closedate:"2025-08-05",createdate:"2025-08-07"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-11-05",createdate:"2025-08-07"},
+  {stage:"495",amt:5000,prob:0.02,won:false,lost:false,closedate:"2025-08-05",createdate:"2025-08-07"},
+  {stage:"694",amt:12000,prob:0,won:false,lost:true,closedate:"2025-10-02",createdate:"2025-07-14"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-07-14",createdate:"2025-07-09"},
+  {stage:"693",amt:22750,prob:1,won:true,lost:false,closedate:"2025-08-18",createdate:"2025-07-09"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-10-02",createdate:"2025-07-01"},
+  {stage:"690",amt:10000,prob:0.5,won:false,lost:false,closedate:"2025-06-27",createdate:"2025-06-27"},
+  {stage:"694",amt:61600,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-06-24"},
+  {stage:"694",amt:15000,prob:0,won:false,lost:true,closedate:"2025-11-28",createdate:"2025-06-20"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-06-20"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-06-20"},
+  {stage:"694",amt:15000,prob:0,won:false,lost:true,closedate:"2025-07-06",createdate:"2025-06-20"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-07-11",createdate:"2025-06-20"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-10-02",createdate:"2025-06-20"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-06-20"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-06-20"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2025-10-02",createdate:"2025-06-16"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-07-07",createdate:"2025-06-12"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-08-13",createdate:"2025-06-10"},
+  {stage:"496",amt:12000,prob:0.1,won:false,lost:false,closedate:"2025-05-05",createdate:"2025-06-10"},
+  {stage:"495",amt:5000,prob:0.02,won:false,lost:false,closedate:"2025-05-05",createdate:"2025-06-10"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2025-05-05",createdate:"2025-06-10"},
+  {stage:"693",amt:5000,prob:1,won:true,lost:false,closedate:"2024-09-25",createdate:"2025-05-30"},
+  {stage:"693",amt:5760,prob:1,won:true,lost:false,closedate:"2025-05-30",createdate:"2025-05-30"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-29"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-29"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-29"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-05-28"},
+  {stage:"693",amt:28000,prob:1,won:true,lost:false,closedate:"2025-07-09",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-21",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-28"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-05-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-07-09",createdate:"2025-05-28"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2025-11-28",createdate:"2025-05-26"},
+  {stage:"694",amt:15000,prob:0,won:false,lost:true,closedate:"2025-08-21",createdate:"2025-05-26"},
+  {stage:"694",amt:15000,prob:0,won:false,lost:true,closedate:"2025-05-28",createdate:"2025-05-22"},
+  {stage:"694",amt:15000,prob:0,won:false,lost:true,closedate:"2025-05-28",createdate:"2025-05-20"},
+  {stage:"694",amt:15000,prob:0,won:false,lost:true,closedate:"2025-12-16",createdate:"2025-05-19"},
+  {stage:"694",amt:80000,prob:0,won:false,lost:true,closedate:"2025-05-22",createdate:"2025-05-15"},
+  {stage:"694",amt:40000,prob:0,won:false,lost:true,closedate:"2025-05-15",createdate:"2025-04-18"},
+  {stage:"693",amt:18000,prob:1,won:true,lost:false,closedate:"2025-05-15",createdate:"2025-04-16"},
+  {stage:"496",amt:5000,prob:0.1,won:false,lost:false,closedate:"2025-04-07",createdate:"2025-04-08"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-13",createdate:"2025-03-19"},
+  {stage:"694",amt:112000,prob:0,won:false,lost:true,closedate:"2025-04-11",createdate:"2025-03-10"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-03-07"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2025-03-18",createdate:"2025-03-05"},
+  {stage:"694",amt:50000,prob:0,won:false,lost:true,closedate:"2025-10-02",createdate:"2025-03-04"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-10-02",createdate:"2025-02-27"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-02-13"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-02-13"},
+  {stage:"694",amt:60000,prob:0,won:false,lost:true,closedate:"2025-05-29",createdate:"2025-02-13"},
+  {stage:"694",amt:1500,prob:0,won:false,lost:true,closedate:"2025-12-16",createdate:"2025-02-13"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2025-02-13"},
+  {stage:"694",amt:100000,prob:0,won:false,lost:true,closedate:"2025-02-17",createdate:"2025-02-13"},
+  {stage:"693",amt:80000,prob:1,won:true,lost:false,closedate:"2025-10-27",createdate:"2025-02-13"},
+  {stage:"694",amt:10500,prob:0,won:false,lost:true,closedate:"2025-10-02",createdate:"2025-02-13"},
+  {stage:"694",amt:100000,prob:0,won:false,lost:true,closedate:"2025-03-10",createdate:"2025-02-13"},
+  {stage:"693",amt:7000,prob:1,won:true,lost:false,closedate:"2025-02-03",createdate:"2025-02-10"},
+  {stage:"693",amt:80000,prob:1,won:true,lost:false,closedate:"2025-02-07",createdate:"2025-02-10"},
+  {stage:"693",amt:2100,prob:1,won:true,lost:false,closedate:"2025-02-03",createdate:"2025-02-10"},
+  {stage:"497",amt:40000,prob:0.2,won:false,lost:false,closedate:"2025-02-05",createdate:"2025-02-10"},
+  {stage:"693",amt:10000,prob:1,won:true,lost:false,closedate:"2025-10-02",createdate:"2025-02-10"},
+  {stage:"693",amt:10000,prob:1,won:true,lost:false,closedate:"2025-06-20",createdate:"2025-02-10"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2025-02-04"},
+  {stage:"496",amt:20000,prob:0.1,won:false,lost:false,closedate:"2025-01-28",createdate:"2025-01-28"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2025-01-24"},
+  {stage:"495",amt:30000,prob:0.02,won:false,lost:false,closedate:"2025-01-31",createdate:"2025-01-21"},
+  {stage:"694",amt:93000,prob:0,won:false,lost:true,closedate:"2025-02-17",createdate:"2025-01-21"},
+  {stage:"497",amt:18000,prob:0.2,won:false,lost:false,closedate:"2025-01-13",createdate:"2025-01-03"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2025-03-12",createdate:"2025-01-03"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-03-12",createdate:"2024-12-27"},
+  {stage:"694",amt:2000,prob:0,won:false,lost:true,closedate:"2024-11-04",createdate:"2024-12-20"},
+  {stage:"694",amt:7000,prob:0,won:false,lost:true,closedate:"2025-04-18",createdate:"2024-12-19"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-03-12",createdate:"2024-12-19"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-03-12",createdate:"2024-12-19"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2025-05-23",createdate:"2024-12-18"},
+  {stage:"694",amt:90000,prob:0,won:false,lost:true,closedate:"2026-01-23",createdate:"2024-12-18"},
+  {stage:"693",amt:40000,prob:1,won:true,lost:false,closedate:"2025-12-09",createdate:"2024-12-16"},
+  {stage:"495",amt:5000,prob:0.02,won:false,lost:false,closedate:"2024-12-16",createdate:"2024-12-16"},
+  {stage:"495",amt:30000,prob:0.02,won:false,lost:false,closedate:"2024-12-16",createdate:"2024-12-16"},
+  {stage:"693",amt:20000,prob:1,won:true,lost:false,closedate:"2024-10-04",createdate:"2024-12-12"},
+  {stage:"694",amt:300000,prob:0,won:false,lost:true,closedate:"2024-11-04",createdate:"2024-12-12"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-05-23",createdate:"2024-12-12"},
+  {stage:"694",amt:150000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-12-12"},
+  {stage:"694",amt:76000,prob:0,won:false,lost:true,closedate:"2024-09-30",createdate:"2024-12-12"},
+  {stage:"694",amt:90000,prob:0,won:false,lost:true,closedate:"2024-09-02",createdate:"2024-12-12"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-06-30",createdate:"2024-12-12"},
+  {stage:"694",amt:150000,prob:0,won:false,lost:true,closedate:"2024-07-30",createdate:"2024-12-11"},
+  {stage:"693",amt:15000,prob:1,won:true,lost:false,closedate:"2024-05-30",createdate:"2024-12-11"},
+  {stage:"694",amt:19500,prob:0,won:false,lost:true,closedate:"2024-04-29",createdate:"2024-12-11"},
+  {stage:"693",amt:7000,prob:1,won:true,lost:false,closedate:"2024-04-01",createdate:"2024-12-11"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2024-06-01",createdate:"2024-12-11"},
+  {stage:"693",amt:7000,prob:1,won:true,lost:false,closedate:"2024-09-13",createdate:"2024-12-11"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2024-06-01",createdate:"2024-12-11"},
+  {stage:"694",amt:50000,prob:0,won:false,lost:true,closedate:"2024-01-26",createdate:"2024-12-11"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2025-05-20",createdate:"2024-12-11"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2024-01-15",createdate:"2024-12-11"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2024-01-15",createdate:"2024-12-11"},
+  {stage:"694",amt:150000,prob:0,won:false,lost:true,closedate:"2025-02-13",createdate:"2024-12-10"},
+  {stage:"693",amt:85000,prob:1,won:true,lost:false,closedate:"2025-02-13",createdate:"2024-12-10"},
+  {stage:"693",amt:80000,prob:1,won:true,lost:false,closedate:"2026-02-10",createdate:"2024-12-10"},
+  {stage:"693",amt:38000,prob:1,won:true,lost:false,closedate:"2024-01-15",createdate:"2024-12-10"},
+  {stage:"693",amt:150000,prob:1,won:true,lost:false,closedate:"2024-03-25",createdate:"2024-12-10"},
+  {stage:"496",amt:30000,prob:0.1,won:false,lost:false,closedate:"2024-11-01",createdate:"2024-12-10"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-27"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-27"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2025-02-26",createdate:"2024-11-27"},
+  {stage:"694",amt:200000,prob:0,won:false,lost:true,closedate:"2024-12-19",createdate:"2024-11-27"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-05-20",createdate:"2024-11-27"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-27"},
+  {stage:"694",amt:7000,prob:0,won:false,lost:true,closedate:"2025-03-12",createdate:"2024-11-27"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-03-12",createdate:"2024-11-27"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-03-07",createdate:"2024-11-27"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-27"},
+  {stage:"694",amt:57000,prob:0,won:false,lost:true,closedate:"2024-12-12",createdate:"2024-11-27"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2024-06-12",createdate:"2024-11-26"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-26"},
+  {stage:"694",amt:40000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-26"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-26"},
+  {stage:"694",amt:30000,prob:0,won:false,lost:true,closedate:"2025-03-07",createdate:"2024-11-26"},
+  {stage:"694",amt:100000,prob:0,won:false,lost:true,closedate:"2024-08-26",createdate:"2024-11-26"},
+  {stage:"694",amt:80000,prob:0,won:false,lost:true,closedate:"2024-09-09",createdate:"2024-11-26"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-26"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2024-08-30",createdate:"2024-11-26"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2024-07-26",createdate:"2024-11-26"},
+  {stage:"694",amt:5000,prob:0,won:false,lost:true,closedate:"2025-03-12",createdate:"2024-11-26"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2025-08-07",createdate:"2024-11-26"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-26"},
+  {stage:"694",amt:10000,prob:0,won:false,lost:true,closedate:"2024-09-02",createdate:"2024-11-26"},
+  {stage:"694",amt:25000,prob:0,won:false,lost:true,closedate:"2023-12-22",createdate:"2024-11-26"},
+  {stage:"694",amt:0,prob:0,won:false,lost:true,closedate:"2025-02-21",createdate:"2024-11-26"},
+  {stage:"694",amt:20000,prob:0,won:false,lost:true,closedate:"2024-03-15",createdate:"2024-11-26"},
+  {stage:"694",amt:12500,prob:0,won:false,lost:true,closedate:"2024-03-15",createdate:"2024-11-26"},
+  {stage:"694",amt:60000,prob:0,won:false,lost:true,closedate:"2024-12-10",createdate:"2024-11-26"},
+  {stage:"694",amt:12500,prob:0,won:false,lost:true,closedate:"2025-03-19",createdate:"2024-11-26"},
+];
+
+const TODAY = new Date("2026-03-05");
+const CY = 2026, PY = 2025;
+const PIPE_STAGES = ["495","496","497","690","691"];
+const STAGE_LABELS = {"495":"Introductory","496":"Prospect","497":"Qualified","690":"Opportunity"};
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function filterDeals(deals, period) {
+  return deals.filter(d => {
+    const refDate = new Date((d.won || d.lost) ? d.closedate : d.createdate);
+    const y = refDate.getFullYear(), mo = refDate.getMonth();
+    if (period === "MTD") return y === CY && mo === 2 && refDate <= TODAY;
+    if (period === "YTD") return y === CY && refDate <= TODAY;
+    if (period === "CUR") return y === CY;
+    if (period === "PREV") return y === PY;
+    return true;
+  });
+}
+
+function computeMetrics(deals) {
+  const pipe = deals.filter(d => PIPE_STAGES.includes(d.stage));
+  const won = deals.filter(d => d.won), lost = deals.filter(d => d.lost);
+  const pipeValue = pipe.reduce((s,d)=>s+d.amt,0);
+  const weighted = pipe.reduce((s,d)=>s+d.amt*d.prob,0);
+  const wonAmt = won.reduce((s,d)=>s+d.amt,0);
+  const lostAmt = lost.reduce((s,d)=>s+d.amt,0);
+  const total = won.length + lost.length;
+  const winRatio = total > 0 ? (won.length/total)*100 : 0;
+  const avgWon = won.length > 0 ? wonAmt/won.length : 0;
+  const stageAgg = {}, stageCount = {};
+  PIPE_STAGES.forEach(s=>{stageAgg[s]=0; stageCount[s]=0;});
+  pipe.forEach(d=>{if(stageAgg[d.stage]!==undefined){stageAgg[d.stage]+=d.amt; stageCount[d.stage]++;}});
+  const chartData = ["495","496","497","690"].map(s=>({name:STAGE_LABELS[s],value:stageAgg[s]||0,count:stageCount[s]||0}));
+  return {pipeValue,weighted,totalInPipe:pipe.length,won:won.length,lost:lost.length,wonAmt,lostAmt,winRatio,avgWon,chartData};
+}
+
+function monthlyWon(deals, year) {
+  const by = Array(12).fill(0);
+  deals.filter(d=>d.won&&new Date(d.closedate).getFullYear()===year)
+       .forEach(d=>{by[new Date(d.closedate).getMonth()]+=d.amt;});
+  return MONTHS.map((m,i)=>({month:m,[year]:by[i]}));
+}
+
+function fmt(n){if(n>=1e6)return(n/1e6).toFixed(2)+"M€";if(n>=1e3)return(n/1e3).toFixed(0)+"K€";return n+"€";}
+function fmtS(n){if(n>=1e6)return(n/1e6).toFixed(2)+"M";if(n>=1e3)return(n/1e3).toFixed(1)+"K";return String(n);}
+function pctDiff(a,b){if(b===0)return a>0?"+∞%":"—";const p=((a-b)/b)*100;return(p>=0?"+":"")+p.toFixed(0)+"%";}
+function pctCol(a,b){return a>=b?"#4ade80":"#f87171";}
+
+function WinRing({ratio,size=100}){
+  const st=9,r=(size-st)/2,circ=2*Math.PI*r,dash=(ratio/100)*circ;
+  return(<svg width={size} height={size} style={{transform:"rotate(-90deg)"}}>
+    <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,.25)" strokeWidth={st}/>
+    <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#fff" strokeWidth={st} strokeDasharray={`${dash} ${circ-dash}`} strokeLinecap="round"/>
+  </svg>);
+}
+
+const CTip = ({active,payload})=>active&&payload?.length?(<div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:6,padding:"8px 14px",color:"#0f172a",fontSize:13,boxShadow:"0 4px 12px rgba(0,0,0,.1)"}}>
+  <b style={{display:"block",marginBottom:4}}>{payload[0].payload.name||payload[0].payload.month}</b>
+  {payload.map((p,i)=><div key={i} style={{color:p.color||"#e74c3c"}}>{p.name==="value"?"Amount":p.name==="count"?"Deals":p.name}: {p.name==="value"?fmt(p.value):p.value}</div>)}
+</div>):null;
+
+function Dashboard() {
+  const [period, setPeriod] = useState("ALL");
+  const isYoY = period === "YoY";
+
+  const deals = useMemo(()=>filterDeals(ALL_DEALS, isYoY ? "CUR" : period),[period]);
+  const m = useMemo(()=>computeMetrics(deals),[deals]);
+  const mPrev = useMemo(()=>computeMetrics(filterDeals(ALL_DEALS,"PREV")),[]);
+  const displayM = m;
+  const compareM = isYoY ? mPrev : null;
+
+  const trendData = useMemo(()=>{
+    const cur = monthlyWon(ALL_DEALS, CY);
+    const prev = monthlyWon(ALL_DEALS, PY);
+    return cur.map((c,i)=>({month:c.month,[CY]:c[CY],[PY]:prev[i][PY]}));
+  },[]);
+
+  const TABS = ["MTD","YTD","YoY","ALL","ACT"];
+  const TLABELS = {MTD:"MTD · Mar 2026",YTD:"YTD · 2026",YoY:`YoY · ${PY} vs ${CY}`,ALL:"All Time",ACT:"Activities · Jan–Mar YTD"};
+
+  // Activities data: new deals created/won/lost per month + notes (Jan-Mar 2026)
+  const ACT_MONTHS = ["Jan","Feb","Mar"];
+  const ACT_DATA = useMemo(()=>{
+    const created=[0,0,0], won=[0,0,0], lost=[0,0,0];
+    ALL_DEALS.forEach(d=>{
+      const ct=new Date(d.createdate); if(ct.getFullYear()===CY&&ct.getMonth()<=2) created[ct.getMonth()]++;
+      if(d.won){const cl=new Date(d.closedate);if(cl.getFullYear()===CY&&cl.getMonth()<=2)won[cl.getMonth()]++;}
+      if(d.lost){const cl=new Date(d.closedate);if(cl.getFullYear()===CY&&cl.getMonth()<=2)lost[cl.getMonth()]++;}
+    });
+    return ACT_MONTHS.map((m,i)=>({month:m,"New Deals":created[i],"Won":won[i],"Lost":lost[i]}));
+  },[]);
+
+  return (
+    <div style={{fontFamily:"'Open Sans',sans-serif",background:"#f0f0f0",minHeight:"100vh",padding:"16px 18px",color:"#0f172a"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap');
+        *{box-sizing:border-box;font-family:'Open Sans',sans-serif;}
+        .tab{cursor:pointer;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;letter-spacing:.3px;transition:all .15s;border:1.5px solid transparent;text-transform:uppercase;}
+        .active{background:#c0392b;color:#fff;border-color:#c0392b;}
+        .inactive{background:#fff;color:#64748b;border-color:#e2e8f0;}
+        .inactive:hover{border-color:#c0392b;color:#c0392b;}
+        .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+        .badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;margin-left:6px;}
+      `}</style>
+
+      {/* HEADER */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div>
+          <h1 style={{margin:0,fontSize:30,fontWeight:800,letterSpacing:1,textTransform:"uppercase",fontFamily:"'Open Sans',sans-serif",color:"#1a1a1a"}}>Sales Pipeline Dashboard</h1>
+          <div style={{fontSize:14,color:"#555",marginTop:3,fontFamily:"'Open Sans',sans-serif"}}>HubSpot CRM · Default Pipeline · March 5, 2026</div>
+        </div>
+        <img src="data:image/png;base64,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" alt="Data Masters" style={{height:70,objectFit:"contain"}}/>
+      </div>
+
+      {/* TABS */}
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+        {TABS.map(t=>(
+          <button key={t} className={`tab ${period===t?"active":"inactive"}`} onClick={()=>setPeriod(t)}>{TLABELS[t]}</button>
+        ))}
+      </div>
+
+      {/* YoY TREND + KPI COMPARISON */}
+      {isYoY && (
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+          <div className="card">
+            <div style={{fontSize:13,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Won Revenue — {PY} vs {CY}</div>
+            <ResponsiveContainer width="100%" height={170}>
+              <LineChart data={trendData} margin={{top:4,right:6,left:-10,bottom:0}}>
+                <XAxis dataKey="month" tick={{fontSize:12,fill:"#94a3b8"}} tickLine={false} axisLine={false}/>
+                <YAxis tickFormatter={v=>v>=1000?(v/1000)+"K":v} tick={{fontSize:12,fill:"#94a3b8"}} tickLine={false} axisLine={false}/>
+                <Tooltip content={<CTip/>}/>
+                <Legend wrapperStyle={{fontSize:13,color:"#64748b"}}/>
+                <Line type="monotone" dataKey={PY} stroke="#cbd5e1" strokeWidth={2} dot={false} strokeDasharray="4 3"/>
+                <Line type="monotone" dataKey={CY} stroke="#e74c3c" strokeWidth={2.5} dot={{fill:"#e74c3c",r:3}}/>
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {[
+              {label:"Won Deals",cur:m.won,prev:mPrev.won,f:v=>v},
+              {label:"Won Revenue",cur:m.wonAmt,prev:mPrev.wonAmt,f:fmt},
+              {label:"Win Ratio",cur:m.winRatio,prev:mPrev.winRatio,f:v=>v.toFixed(1)+"%"},
+              {label:"Avg Deal",cur:m.avgWon,prev:mPrev.avgWon,f:fmt},
+            ].map(({label,cur,prev,f})=>(
+              <div key={label} className="card">
+                <div style={{fontSize:12,color:"#64748b",textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>{label}</div>
+                <div style={{fontSize:26,fontWeight:800,fontFamily:"'Open Sans',sans-serif",color:"#0f172a"}}>{f(cur)}</div>
+                <div style={{fontSize:13,color:"#64748b",marginTop:3}}>
+                  {PY}: {f(prev)}
+                  <span className="badge" style={{background:cur>=prev?"rgba(74,222,128,.12)":"rgba(248,113,113,.12)",color:pctCol(cur,prev)}}>
+                    {pctDiff(cur,prev)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ACTIVITIES VIEW */}
+      {period==="ACT" && (
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          {/* KPI summary strip */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+            {[
+              {label:"New Deals Created",values:ACT_DATA.map(d=>d["New Deals"]),color:"#3b82f6",icon:"➕"},
+              {label:"Deals Won",values:ACT_DATA.map(d=>d["Won"]),color:"#22c55e",icon:"✅"},
+              {label:"Deals Lost",values:ACT_DATA.map(d=>d["Lost"]),color:"#ef4444",icon:"❌"},
+            ].map(({label,values,color,icon})=>(
+              <div key={label} className="card">
+                <div style={{fontSize:12,color:"#64748b",textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>{icon} {label}</div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
+                  {ACT_MONTHS.map((m,i)=>(
+                    <div key={m} style={{textAlign:"center",flex:1}}>
+                      <div style={{fontSize:26,fontWeight:800,color,lineHeight:1}}>{values[i]}</div>
+                      <div style={{fontSize:12,color:"#64748b",marginTop:3}}>{m}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:8,fontSize:13,fontWeight:700,color:"#94a3b8"}}>
+                  Total: <span style={{color}}>{values.reduce((a,b)=>a+b,0)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Grouped bar chart */}
+          <div className="card">
+            <div style={{fontSize:13,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Monthly Activity Breakdown — Jan to Mar 2026</div>
+            <div style={{display:"flex",gap:20,marginBottom:10}}>
+              {[["#3b82f6","New Deals"],["#22c55e","Won"],["#ef4444","Lost"]].map(([c,l])=>(
+                <div key={l} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"#94a3b8"}}>
+                  <div style={{width:12,height:12,borderRadius:2,background:c}}/>{l}
+                </div>
+              ))}
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={ACT_DATA} margin={{top:10,right:10,left:-10,bottom:0}} barGap={4} barCategoryGap="30%">
+                <XAxis dataKey="month" tick={{fontSize:13,fill:"#64748b"}} tickLine={false} axisLine={false}/>
+                <YAxis tick={{fontSize:12,fill:"#64748b"}} tickLine={false} axisLine={false} allowDecimals={false}/>
+                <Tooltip content={<CTip/>}/>
+                <Bar dataKey="New Deals" fill="#3b82f6" radius={[4,4,0,0]} label={{position:"top",fontSize:12,fill:"#3b82f6",fontWeight:700}}/>
+                <Bar dataKey="Won" fill="#22c55e" radius={[4,4,0,0]} label={{position:"top",fontSize:12,fill:"#22c55e",fontWeight:700}}/>
+                <Bar dataKey="Lost" fill="#ef4444" radius={[4,4,0,0]} label={{position:"top",fontSize:12,fill:"#ef4444",fontWeight:700}}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Conversion funnel */}
+          <div className="card">
+            <div style={{fontSize:13,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>YTD Conversion Funnel</div>
+            <div style={{display:"flex",alignItems:"center",gap:0}}>
+              {[
+                {label:"Created",val:ACT_DATA.reduce((s,d)=>s+d["New Deals"],0),color:"#3b82f6",w:"100%"},
+                {label:"Won",val:ACT_DATA.reduce((s,d)=>s+d["Won"],0),color:"#22c55e",w:"60%"},
+                {label:"Lost",val:ACT_DATA.reduce((s,d)=>s+d["Lost"],0),color:"#ef4444",w:"80%"},
+              ].map(({label,val,color,w},i)=>(
+                <div key={label} style={{flex:1,padding:"0 8px",borderLeft:i>0?"1px solid rgba(255,255,255,.08)":"none"}}>
+                  <div style={{fontSize:12,color:"#64748b",textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>{label}</div>
+                  <div style={{fontSize:34,fontWeight:800,color,lineHeight:1.1}}>{val}</div>
+                  <div style={{marginTop:8,height:6,borderRadius:3,background:"rgba(255,255,255,.06)",overflow:"hidden"}}>
+                    <div style={{height:"100%",width:w,background:color,borderRadius:3}}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {period!=="ACT" && <>
+      {/* MAIN ROW */}
+      <div style={{display:"grid",gridTemplateColumns:"1.1fr 1fr 1fr",gap:12,marginBottom:12}}>
+
+        {/* Bar + Line Combo Chart */}
+        <div className="card">
+          <div style={{fontSize:13,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Pipeline by Stage</div>
+          <div style={{display:"flex",gap:16,marginBottom:6}}>
+            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#64748b"}}>
+              <div style={{width:12,height:12,borderRadius:2,background:"#dc2626"}}/>Amount (€)
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#64748b"}}>
+              <div style={{width:20,height:2,background:"#2563eb",borderRadius:1}}/>Deal Count
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={175}>
+            <ComposedChart data={displayM.chartData} margin={{top:20,right:30,left:-10,bottom:0}}>
+              <XAxis dataKey="name" tick={{fontSize:11,fill:"#94a3b8"}} tickLine={false} axisLine={false}/>
+              <YAxis yAxisId="left" tickFormatter={v=>v>=1000?(v/1000)+"K":v} tick={{fontSize:11,fill:"#94a3b8"}} tickLine={false} axisLine={false}/>
+              <YAxis yAxisId="right" orientation="right" tick={{fontSize:11,fill:"#2563eb"}} tickLine={false} axisLine={false} width={24}/>
+              <Tooltip content={<CTip/>}/>
+              <Bar yAxisId="left" dataKey="value" radius={[4,4,0,0]} label={{position:"top",formatter:v=>v>0?fmt(v):"",fontSize:10,fill:"#dc2626",fontWeight:700}}>
+                {displayM.chartData.map((_,i)=><Cell key={i} fill={["#c0392b","#c0392b","#c0392b","#c0392b"][i]}/>)}
+              </Bar>
+              <Line yAxisId="right" type="monotone" dataKey="count" stroke="#2563eb" strokeWidth={2.5} dot={{fill:"#2563eb",r:5,strokeWidth:0}} label={{position:"top",fontSize:12,fill:"#2563eb",fontWeight:700}}/>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Pipe Card */}
+        <div className="card" style={{background:"linear-gradient(135deg,#4a8c8c 0%,#5ba3a0 100%)",border:"none",color:"#fff"}}>
+          <div style={{fontSize:13,fontWeight:700,color:"rgba(255,255,255,.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Currently in Pipeline</div>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+            <div style={{fontSize:13,lineHeight:2,color:"rgba(255,255,255,.7)"}}>
+              {["Introductory","Prospect","Qualified","Opportunity"].map(s=>(
+                <div key={s} style={{display:"flex",alignItems:"center",gap:4}}>
+                  <div style={{width:5,height:5,borderRadius:"50%",background:"rgba(255,255,255,.5)"}}/>
+                  {s}
+                </div>
+              ))}
+            </div>
+            <div style={{width:68,height:68,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"2px solid rgba(255,255,255,.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <span style={{fontSize:30,fontWeight:800}}>{displayM.totalInPipe}</span>
+            </div>
+          </div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,.1)",paddingTop:10}}>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.45)",textTransform:"uppercase",letterSpacing:.5}}>Pipe Value</div>
+            <div style={{fontSize:34,fontWeight:800,lineHeight:1.1,fontFamily:"'Open Sans',sans-serif"}}>{fmtS(displayM.pipeValue)}</div>
+            <div style={{display:"flex",alignItems:"baseline",gap:5,marginTop:3}}>
+              <span style={{fontSize:17,fontWeight:700}}>⚖ {fmtS(Math.round(displayM.weighted))}</span>
+              <span style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>weighted</span>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Stack */}
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {[
+            {cardBg:"#2e6da4",label:"Avg Won Value",value:fmtS(Math.round(displayM.avgWon)),icon:"🏅",comp:compareM?fmtS(Math.round(compareM.avgWon)):null,raw:[displayM.avgWon,compareM?.avgWon]},
+            {label:"Won Deals",value:displayM.won,icon:"✅",comp:compareM?compareM.won:null,raw:[displayM.won,compareM?.won]},
+            {label:"Win Ratio",value:displayM.winRatio.toFixed(1)+"%",icon:"🎯",comp:compareM?compareM.winRatio.toFixed(1)+"%":null,raw:[displayM.winRatio,compareM?.winRatio]},
+          ].map(({label,value,icon,comp,raw})=>(
+            <div key={label} className="card" style={{flex:1,display:"flex",alignItems:"center",gap:12,background:"linear-gradient(135deg,#2e6da4 0%,#3a80be 100%)",border:"none",color:"#fff"}}>
+              <div style={{fontSize:28}}>{icon}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,color:"rgba(255,255,255,.6)",textTransform:"uppercase",letterSpacing:.5}}>{label}</div>
+                <div style={{fontSize:26,fontWeight:800,fontFamily:"'Open Sans',sans-serif",lineHeight:1.15,color:"#fff"}}>{value}</div>
+                {comp && <div style={{fontSize:12,color:"rgba(255,255,255,.7)",marginTop:2}}>
+                  {PY}: {comp}
+                  <span className="badge" style={{background:raw[0]>=raw[1]?"rgba(74,222,128,.12)":"rgba(248,113,113,.12)",color:pctCol(raw[0],raw[1])}}>
+                    {pctDiff(raw[0],raw[1])}
+                  </span>
+                </div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* WIN vs LOST BAR */}
+      <div style={{background:"linear-gradient(135deg,#c0604a 0%,#d4705a 100%)",borderRadius:10,padding:"18px 26px",display:"flex",alignItems:"center",gap:0,flexWrap:"wrap"}}>
+        <div style={{flex:"0 0 180px"}}>
+          <div style={{fontSize:13,fontWeight:700,letterSpacing:2,textTransform:"uppercase",opacity:.65,marginBottom:3,fontFamily:"'Open Sans',sans-serif"}}>Win vs Lost</div>
+          <div style={{fontSize:12,opacity:.55,textTransform:"uppercase",letterSpacing:1}}>Deals</div>
+          <div style={{fontSize:42,fontWeight:800,lineHeight:1.1,fontFamily:"'Open Sans',sans-serif"}}>
+            {displayM.won}<span style={{opacity:.35}}>/{displayM.won+displayM.lost}</span>
+          </div>
+          {compareM && <div style={{fontSize:13,opacity:.65,marginTop:2}}>
+            {PY}: {compareM.won}/{compareM.won+compareM.lost}
+            <span className="badge" style={{background:displayM.won>=compareM.won?"rgba(74,222,128,.2)":"rgba(255,255,255,.1)",color:pctCol(displayM.won,compareM.won)}}>{pctDiff(displayM.won,compareM.won)}</span>
+          </div>}
+        </div>
+        <div style={{width:1,height:65,background:"rgba(255,255,255,.2)",margin:"0 24px"}}/>
+        <div style={{flex:"0 0 250px"}}>
+          <div style={{fontSize:12,opacity:.55,textTransform:"uppercase",letterSpacing:1}}>Amount Won / Lost</div>
+          <div style={{fontSize:28,fontWeight:800,lineHeight:1.1,fontFamily:"'Open Sans',sans-serif"}}>
+            {(displayM.wonAmt/1e6).toFixed(3)}<span style={{opacity:.35}}>/{(displayM.lostAmt/1e6).toFixed(3)} M€</span>
+          </div>
+          <div style={{marginTop:8,height:5,borderRadius:3,background:"rgba(255,255,255,.2)",overflow:"hidden"}}>
+            <div style={{height:"100%",borderRadius:3,width:`${displayM.wonAmt/(displayM.wonAmt+displayM.lostAmt||1)*100}%`,background:"#fff"}}/>
+          </div>
+          {compareM && <div style={{fontSize:13,opacity:.65,marginTop:4}}>
+            {PY}: {(compareM.wonAmt/1e6).toFixed(3)}M€
+            <span className="badge" style={{background:displayM.wonAmt>=compareM.wonAmt?"rgba(74,222,128,.2)":"rgba(255,255,255,.1)",color:pctCol(displayM.wonAmt,compareM.wonAmt)}}>{pctDiff(displayM.wonAmt,compareM.wonAmt)}</span>
+          </div>}
+        </div>
+        <div style={{flex:1}}/>
+        <div style={{textAlign:"center",position:"relative"}}>
+          <div style={{fontSize:12,opacity:.55,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Win Ratio</div>
+          <div style={{position:"relative",display:"inline-block"}}>
+            <WinRing ratio={displayM.winRatio}/>
+            <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,fontWeight:800,fontFamily:"'Open Sans',sans-serif"}}>
+              {displayM.winRatio.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </>
+      }
+      <div style={{marginTop:8,fontSize:12,color:"#94a3b8",textAlign:"right"}}>
+        {period==="MTD"?"Filtered: deals created/closed in March 2026":period==="YTD"?"Filtered: deals created/closed in 2026":period==="YoY"?"Comparing full year 2025 vs 2026 (YTD)":period==="ACT"?"Activities based on deal create dates & notes logged (HubSpot CRM)":"All records in HubSpot CRM"}
+      </div>
+    </div>
+  );
+}
+
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Dashboard/>);
+  </script>
+</body>
+</html>
