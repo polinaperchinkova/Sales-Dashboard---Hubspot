@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sales Pipeline Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.0/Recharts.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e28;
+    --border: #252a37;
+    --accent: #f97316;
+    --accent2: #3b82f6;
+    --accent3: #10b981;
+    --accent4: #a855f7;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --muted2: #94a3b8;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--muted2);
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: var(--accent3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--accent3);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* NAV TABS */
+  .nav {
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN CONTENT */
+  .main { padding: 28px 32px; }
+
+  /* DATE STRIP */
+  .date-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+  }
+
+  .page-title span { color: var(--accent); }
+
+  .date-info {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .kpi-card.orange::before { background: var(--accent); }
+  .kpi-card.blue::before { background: var(--accent2); }
+  .kpi-card.green::before { background: var(--accent3); }
+  .kpi-card.purple::before { background: var(--accent4); }
+
+  .kpi-card:hover { border-color: #353b4e; }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .badge-up { color: var(--accent3); }
+  .badge-down { color: #ef4444; }
+
+  /* CHARTS GRID */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+  }
+
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+
+  .chart-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .chart-badge.green { background: rgba(16,185,129,0.12); color: var(--accent3); }
+  .chart-badge.orange { background: rgba(249,115,22,0.12); color: var(--accent); }
+
+  /* PIPELINE STAGES */
+  .pipeline-stages {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stage-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stage-name {
+    font-size: 12px;
+    color: var(--muted2);
+    width: 110px;
+    flex-shrink: 0;
+  }
+
+  .stage-bar-wrap {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .stage-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+
+  .stage-val {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    width: 70px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* TABLE */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .table-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    padding: 11px 22px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: default;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  tbody td {
+    padding: 13px 22px;
+    color: var(--muted2);
+  }
+
+  tbody td:first-child { color: var(--text); font-weight: 500; }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .status-pill.won { background: rgba(16,185,129,0.12); color: var(--accent3); }
+  .status-pill.active { background: rgba(59,130,246,0.12); color: var(--accent2); }
+  .status-pill.proposal { background: rgba(249,115,22,0.12); color: var(--accent); }
+  .status-pill.lost { background: rgba(239,68,68,0.1); color: #ef4444; }
+  .status-pill.negotiation { background: rgba(168,85,247,0.12); color: var(--accent4); }
+
+  /* ACTIVITIES */
+  .activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .activity-item:last-child { border-bottom: none; }
+  .activity-item:hover { background: var(--surface2); }
+
+  .activity-icon {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .activity-icon.call { background: rgba(59,130,246,0.12); }
+  .activity-icon.email { background: rgba(249,115,22,0.12); }
+  .activity-icon.meeting { background: rgba(16,185,129,0.12); }
+  .activity-icon.note { background: rgba(168,85,247,0.12); }
+  .activity-icon.task { background: rgba(234,179,8,0.12); }
+
+  .activity-body { flex: 1; }
+
+  .activity-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .activity-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .activity-time {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  /* BOTTOM GRID */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .main { padding: 20px 16px; }
+    .header { padding: 16px; }
+    .nav { padding: 0 16px; overflow-x: auto; }
+  }
+
+  /* HIDDEN VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* YOY specific */
+  .yoy-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap:16px;
+    margin-bottom:24px;
+  }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .compare-title {
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.7px;
+    font-weight:600;
+    margin-bottom:14px;
+  }
+
+  .compare-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+  }
+
+  .compare-row:last-child { border-bottom:none; }
+  .compare-row .year { color:var(--muted2); }
+  .compare-row .val { font-family:'DM Mono',monospace; font-weight:500; }
+  .compare-row .delta { font-size:11px; font-weight:600; }
+
+  .empty-state {
+    text-align:center;
+    padding:60px 20px;
+    color:var(--muted);
+    font-size:14px;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Sales Pipeline
+  </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      HubSpot CRM
+    </div>
+    <span id="current-date"></span>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="tab active" onclick="switchTab('mtd', this)">MTD</div>
+  <div class="tab" onclick="switchTab('ytd', this)">YTD</div>
+  <div class="tab" onclick="switchTab('yoy', this)">YoY</div>
+  <div class="tab" onclick="switchTab('activities', this)">Activities</div>
+</nav>
+
+<main class="main">
+
+  <!-- MTD VIEW -->
+  <div id="view-mtd" class="view active">
+    <div class="date-strip">
+      <div class="page-title">Month-to-Date <span>Overview</span></div>
+      <div class="date-info" id="mtd-range"></div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card orange">
+        <div class="kpi-label">Revenue Closed</div>
+        <div class="kpi-value">$284,500</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 12.4%</span> vs last month</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Pipeline Value</div>
+        <div class="kpi-value">$1.2M</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 8.1%</span> vs last month</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Deals Won</div>
+        <div class="kpi-value">18</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 3</span> vs last month</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Win Rate</div>
+        <div class="kpi-value">34.6%</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 2.1pp</span> vs last month</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Daily Revenue — Current Month</div>
+          <div class="chart-badge green">+12.4% MTD</div>
+        </div>
+        <canvas id="mtd-chart" height="180"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Pipeline Stages</div>
+          <div class="chart-badge orange">52 open deals</div>
+        </div>
+        <div class="pipeline-stages" id="pipeline-stages"></div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header-row">
+        <div class="chart-title">Recent Deals</div>
+        <div style="font-size:12px;color:var(--muted)">This month</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Deal Name</th>
+            <th>Company</th>
+            <th>Owner</th>
+            <th>Stage</th>
+            <th>Value</th>
+            <th>Close Date</th>
+          </tr>
+        </thead>
+        <tbody id="deals-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- YTD VIEW -->
+  <div id="view-ytd" class="view">
+    <div class="date-strip">
+      <div class="page-title">Year-to-Date <span>Performance</span></div>
+      <div class="date-info" id="ytd-range"></div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card orange">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value">$2.14M</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 18.3%</span> vs last year</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Total Pipeline</div>
+        <div class="kpi-value">$5.8M</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 22.6%</span> vs last year</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Deals Closed</div>
+        <div class="kpi-value">143</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 24</span> vs last year</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Avg Deal Size</div>
+        <div class="kpi-value">$14,965</div>
+        <div class="kpi-sub"><span class="badge-down">▼ 3.2%</span> vs last year</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Monthly Revenue — 2025</div>
+          <div class="chart-badge green">+18.3% YTD</div>
+        </div>
+        <canvas id="ytd-chart" height="180"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Revenue by Rep</div>
+          <div class="chart-badge orange">Top performers</div>
+        </div>
+        <canvas id="rep-chart" height="180"></canvas>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header-row">
+        <div class="chart-title">Top Deals — YTD</div>
+        <div style="font-size:12px;color:var(--muted)">Sorted by value</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Deal Name</th>
+            <th>Company</th>
+            <th>Owner</th>
+            <th>Stage</th>
+            <th>Value</th>
+            <th>Close Date</th>
+          </tr>
+        </thead>
+        <tbody id="ytd-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- YOY VIEW -->
+  <div id="view-yoy" class="view">
+    <div class="date-strip">
+      <div class="page-title">Year-over-Year <span>Comparison</span></div>
+      <div class="date-info">2023 · 2024 · 2025</div>
+    </div>
+
+    <div class="yoy-grid">
+      <div class="compare-card">
+        <div class="compare-title">Revenue</div>
+        <div class="compare-row"><span class="year">2023</span><span class="val">$1.42M</span><span class="delta" style="color:var(--muted)">Baseline</span></div>
+        <div class="compare-row"><span class="year">2024</span><span class="val">$1.81M</span><span class="delta badge-up">▲ 27.5%</span></div>
+        <div class="compare-row"><span class="year">2025</span><span class="val">$2.14M</span><span class="delta badge-up">▲ 18.3%</span></div>
+      </div>
+      <div class="compare-card">
+        <div class="compare-title">Deals Won</div>
+        <div class="compare-row"><span class="year">2023</span><span class="val">98</span><span class="delta" style="color:var(--muted)">Baseline</span></div>
+        <div class="compare-row"><span class="year">2024</span><span class="val">119</span><span class="delta badge-up">▲ 21.4%</span></div>
+        <div class="compare-row"><span class="year">2025</span><span class="val">143</span><span class="delta badge-up">▲ 20.2%</span></div>
+      </div>
+      <div class="compare-card">
+        <div class="compare-title">Win Rate</div>
+        <div class="compare-row"><span class="year">2023</span><span class="val">28.4%</span><span class="delta" style="color:var(--muted)">Baseline</span></div>
+        <div class="compare-row"><span class="year">2024</span><span class="val">31.2%</span><span class="delta badge-up">▲ 2.8pp</span></div>
+        <div class="compare-row"><span class="year">2025</span><span class="val">34.6%</span><span class="delta badge-up">▲ 3.4pp</span></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:24px">
+      <div class="chart-header">
+        <div class="chart-title">Annual Revenue Trend</div>
+      </div>
+      <canvas id="yoy-chart" height="160"></canvas>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="compare-card">
+        <div class="compare-title">Avg Deal Size</div>
+        <div class="compare-row"><span class="year">2023</span><span class="val">$14,490</span><span class="delta" style="color:var(--muted)">Baseline</span></div>
+        <div class="compare-row"><span class="year">2024</span><span class="val">$15,210</span><span class="delta badge-up">▲ 5.0%</span></div>
+        <div class="compare-row"><span class="year">2025</span><span class="val">$14,965</span><span class="delta badge-down">▼ 1.6%</span></div>
+      </div>
+      <div class="compare-card">
+        <div class="compare-title">New Contacts</div>
+        <div class="compare-row"><span class="year">2023</span><span class="val">1,240</span><span class="delta" style="color:var(--muted)">Baseline</span></div>
+        <div class="compare-row"><span class="year">2024</span><span class="val">1,580</span><span class="delta badge-up">▲ 27.4%</span></div>
+        <div class="compare-row"><span class="year">2025</span><span class="val">1,910</span><span class="delta badge-up">▲ 20.9%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITIES VIEW -->
+  <div id="view-activities" class="view">
+    <div class="date-strip">
+      <div class="page-title">Activities <span>Feed</span></div>
+      <div class="date-info">Last 30 days</div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-label">Calls Made</div>
+        <div class="kpi-value">312</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 8%</span> vs last month</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Emails Sent</div>
+        <div class="kpi-value">894</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 14%</span> vs last month</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Meetings Held</div>
+        <div class="kpi-value">67</div>
+        <div class="kpi-sub"><span class="badge-up">▲ 5</span> vs last month</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Tasks Completed</div>
+        <div class="kpi-value">241</div>
+        <div class="kpi-sub"><span class="badge-down">▼ 3%</span> vs last month</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header-row">
+        <div class="chart-title">Recent Activity Log</div>
+        <div style="font-size:12px;color:var(--muted)">All team members</div>
+      </div>
+      <div class="activities-list" id="activities-list"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const deals = [
+  { name: 'Enterprise Suite Upgrade', company: 'Acme Corp', owner: 'Sarah K.', stage: 'won', value: '$48,000', date: 'Mar 1, 2025' },
+  { name: 'API Integration Package', company: 'Globex Inc', owner: 'Mike T.', stage: 'active', value: '$22,500', date: 'Mar 8, 2025' },
+  { name: 'Annual License Renewal', company: 'Initech', owner: 'Sarah K.', stage: 'proposal', value: '$18,000', date: 'Mar 15, 2025' },
+  { name: 'Marketing Platform', company: 'Umbrella Ltd', owner: 'James R.', stage: 'negotiation', value: '$35,000', date: 'Mar 18, 2025' },
+  { name: 'Data Analytics Add-on', company: 'Massive Dyn.', owner: 'Lisa M.', stage: 'won', value: '$12,000', date: 'Mar 22, 2025' },
+  { name: 'Security Bundle', company: 'Soylent Corp', owner: 'Mike T.', stage: 'lost', value: '$9,500', date: 'Mar 5, 2025' },
+  { name: 'Cloud Migration Pro', company: 'Vandelay Ind.', owner: 'James R.', stage: 'active', value: '$55,000', date: 'Mar 28, 2025' },
+];
+
+const topDeals = [
+  { name: 'Cloud Migration Pro', company: 'Vandelay Ind.', owner: 'James R.', stage: 'active', value: '$55,000', date: 'Mar 28, 2025' },
+  { name: 'Enterprise Suite Upgrade', company: 'Acme Corp', owner: 'Sarah K.', stage: 'won', value: '$48,000', date: 'Mar 1, 2025' },
+  { name: 'Marketing Platform', company: 'Umbrella Ltd', owner: 'James R.', stage: 'negotiation', value: '$35,000', date: 'Mar 18, 2025' },
+  { name: 'API Integration Package', company: 'Globex Inc', owner: 'Mike T.', stage: 'active', value: '$22,500', date: 'Mar 8, 2025' },
+  { name: 'Annual License Renewal', company: 'Initech', owner: 'Sarah K.', stage: 'won', value: '$18,000', date: 'Feb 10, 2025' },
+  { name: 'Data Analytics Add-on', company: 'Massive Dyn.', owner: 'Lisa M.', stage: 'won', value: '$12,000', date: 'Jan 22, 2025' },
+  { name: 'Security Bundle', company: 'Soylent Corp', owner: 'Mike T.', stage: 'lost', value: '$9,500', date: 'Feb 5, 2025' },
+];
+
+const activities = [
+  { type: 'call', icon: '📞', title: 'Call with Vandelay Industries', sub: 'James R. · Cloud Migration Pro', time: '2h ago' },
+  { type: 'email', icon: '✉️', title: 'Proposal sent to Umbrella Ltd', sub: 'Sarah K. · Marketing Platform', time: '4h ago' },
+  { type: 'meeting', icon: '📅', title: 'Discovery meeting — Acme Corp', sub: 'Mike T. · Enterprise Suite', time: 'Yesterday' },
+  { type: 'note', icon: '📝', title: 'Note added: negotiation update', sub: 'James R. · Marketing Platform', time: 'Yesterday' },
+  { type: 'task', icon: '✅', title: 'Follow-up task completed', sub: 'Lisa M. · Data Analytics Add-on', time: '2 days ago' },
+  { type: 'call', icon: '📞', title: 'Demo call — Globex Inc', sub: 'Mike T. · API Integration Package', time: '2 days ago' },
+  { type: 'email', icon: '✉️', title: 'Intro email sent — Soylent Corp', sub: 'Sarah K. · Security Bundle', time: '3 days ago' },
+  { type: 'meeting', icon: '📅', title: 'QBR with Initech', sub: 'James R. · Annual License Renewal', time: '4 days ago' },
+];
+
+const pipeline = [
+  { name: 'Prospecting', value: '$420,000', pct: 85, color: '#3b82f6' },
+  { name: 'Qualified', value: '$310,000', pct: 63, color: '#a855f7' },
+  { name: 'Proposal Sent', value: '$235,000', pct: 48, color: '#f97316' },
+  { name: 'Negotiation', value: '$158,000', pct: 32, color: '#eab308' },
+  { name: 'Closed Won', value: '$284,500', pct: 58, color: '#10b981' },
+];
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function stageHTML(stage) {
+  const map = { won:'Won', active:'Active', proposal:'Proposal', lost:'Lost', negotiation:'Negotiation' };
+  return `<span class="status-pill ${stage}">${map[stage]||stage}</span>`;
+}
+
+function setDate() {
+  const now = new Date();
+  document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  document.getElementById('mtd-range').textContent = `Mar 1 – Mar 5, 2025`;
+  document.getElementById('ytd-range').textContent = `Jan 1 – Mar 5, 2025`;
+}
+
+// ── RENDER TABLES ─────────────────────────────────────────────────────────────
+function renderTable(id, data) {
+  document.getElementById(id).innerHTML = data.map(d => `
+    <tr>
+      <td>${d.name}</td>
+      <td>${d.company}</td>
+      <td>${d.owner}</td>
+      <td>${stageHTML(d.stage)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--text)">${d.value}</td>
+      <td>${d.date}</td>
+    </tr>
+  `).join('');
+}
+
+// ── PIPELINE BARS ─────────────────────────────────────────────────────────────
+function renderPipeline() {
+  document.getElementById('pipeline-stages').innerHTML = pipeline.map(p => `
+    <div class="stage-row">
+      <div class="stage-name">${p.name}</div>
+      <div class="stage-bar-wrap">
+        <div class="stage-bar" style="width:${p.pct}%;background:${p.color}"></div>
+      </div>
+      <div class="stage-val">${p.value}</div>
+    </div>
+  `).join('');
+}
+
+// ── ACTIVITIES ────────────────────────────────────────────────────────────────
+function renderActivities() {
+  document.getElementById('activities-list').innerHTML = activities.map(a => `
+    <div class="activity-item">
+      <div class="activity-icon ${a.type}">${a.icon}</div>
+      <div class="activity-body">
+        <div class="activity-title">${a.title}</div>
+        <div class="activity-sub">${a.sub}</div>
+      </div>
+      <div class="activity-time">${a.time}</div>
+    </div>
+  `).join('');
+}
+
+// ── CHARTS (Canvas) ───────────────────────────────────────────────────────────
+function drawLineChart(id, labels, data, color) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth || 600;
+  const H = canvas.height;
+  canvas.width = W;
+
+  const pad = { top:10, right:20, bottom:30, left:50 };
+  const w = W - pad.left - pad.right;
+  const h = H - pad.top - pad.bottom;
+
+  const max = Math.max(...data) * 1.15;
+  const xStep = w / (labels.length - 1);
+
+  ctx.clearRect(0,0,W,H);
+
+  // Grid lines
+  ctx.strokeStyle = '#1e2535';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + h - (i/4)*h;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left+w, y); ctx.stroke();
+    ctx.fillStyle = '#475569';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'right';
+    const val = Math.round((max * i/4) / 1000);
+    ctx.fillText(`$${val}k`, pad.left-6, y+3);
+  }
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top+h);
+  grad.addColorStop(0, color + '33');
+  grad.addColorStop(1, color + '00');
+
+  ctx.beginPath();
+  data.forEach((v,i) => {
+    const x = pad.left + i*xStep;
+    const y = pad.top + h - (v/max)*h;
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.lineTo(pad.left + (data.length-1)*xStep, pad.top+h);
+  ctx.lineTo(pad.left, pad.top+h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  data.forEach((v,i) => {
+    const x = pad.left + i*xStep;
+    const y = pad.top + h - (v/max)*h;
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Dots
+  data.forEach((v,i) => {
+    const x = pad.left + i*xStep;
+    const y = pad.top + h - (v/max)*h;
+    ctx.beginPath();
+    ctx.arc(x,y,3.5,0,Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = '#0d0f14';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // X labels
+  ctx.fillStyle = '#475569';
+  ctx.font = '10px DM Sans, sans-serif';
+  ctx.textAlign = 'center';
+  labels.forEach((l,i) => {
+    const x = pad.left + i*xStep;
+    ctx.fillText(l, x, pad.top+h+18);
+  });
+}
+
+function drawBarChart(id, labels, data, color) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth || 300;
+  const H = canvas.height;
+  canvas.width = W;
+
+  const pad = { top:10, right:10, bottom:30, left:50 };
+  const w = W - pad.left - pad.right;
+  const h = H - pad.top - pad.bottom;
+  const max = Math.max(...data) * 1.2;
+  const bw = (w / labels.length) * 0.55;
+  const gap = w / labels.length;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle = '#1e2535';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + h - (i/4)*h;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left+w, y); ctx.stroke();
+    ctx.fillStyle = '#475569';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`$${Math.round(max*i/4/1000)}k`, pad.left-6, y+3);
+  }
+
+  // Bars
+  labels.forEach((l,i) => {
+    const x = pad.left + i*gap + gap/2 - bw/2;
+    const bh = (data[i]/max)*h;
+    const y = pad.top + h - bh;
+
+    const grad = ctx.createLinearGradient(0,y,0,pad.top+h);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, color+'66');
+
+    ctx.beginPath();
+    ctx.roundRect(x, y, bw, bh, [4,4,0,0]);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '10px DM Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(l, pad.left + i*gap + gap/2, pad.top+h+18);
+  });
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('view-'+name).classList.add('active');
+
+  setTimeout(() => {
+    if (name === 'mtd') initMTDCharts();
+    if (name === 'ytd') initYTDCharts();
+    if (name === 'yoy') initYOYChart();
+  }, 10);
+}
+
+function initMTDCharts() {
+  const days = ['1','3','5','7','9','11','13','15','17','19','21','23','25','27','29','31'].slice(0,16);
+  const vals = [8000,14000,11000,19000,16000,24000,20000,28000,25000,32000,29000,38000,34000,42000,39000,48000];
+  drawLineChart('mtd-chart', days, vals, '#f97316');
+}
+
+function initYTDCharts() {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const rev = [165000,182000,210000,195000,225000,248000,215000,260000,275000,240000,265000,284500];
+  drawLineChart('ytd-chart', months, rev, '#3b82f6');
+
+  const reps = ['Sarah K.','Mike T.','James R.','Lisa M.','Chris B.'];
+  const repRev = [520000,410000,580000,340000,290000];
+  drawBarChart('rep-chart', reps, repRev, '#a855f7');
+}
+
+function initYOYChart() {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const y2023 = [95,105,115,110,120,130,118,135,142,128,138,142].map(v=>v*1000);
+  const y2024 = [120,135,148,142,155,168,152,175,182,165,178,181].map(v=>v*1000);
+  const y2025 = [165,182,210,0,0,0,0,0,0,0,0,0];
+
+  const canvas = document.getElementById('yoy-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth || 800;
+  const H = canvas.height;
+  canvas.width = W;
+
+  const pad = { top:10, right:80, bottom:30, left:60 };
+  const w = W - pad.left - pad.right;
+  const h = H - pad.top - pad.bottom;
+  const max = 220000;
+  const xStep = w / 11;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle = '#1e2535'; ctx.lineWidth = 1;
+  for (let i=0;i<=4;i++) {
+    const y = pad.top + h - (i/4)*h;
+    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(pad.left+w,y); ctx.stroke();
+    ctx.fillStyle='#475569'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='right';
+    ctx.fillText(`$${Math.round(max*i/4/1000)}k`, pad.left-6, y+3);
+  }
+
+  const datasets = [
+    { data: y2023, color: '#475569', label: '2023' },
+    { data: y2024, color: '#3b82f6', label: '2024' },
+    { data: y2025.filter(v=>v>0), color: '#f97316', label: '2025' },
+  ];
+
+  datasets.forEach(ds => {
+    const pts = ds.data.filter(v=>v>0);
+    ctx.beginPath();
+    ctx.strokeStyle = ds.color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.setLineDash(ds.label === '2025' ? [5,4] : []);
+    pts.forEach((v,i) => {
+      const x = pad.left + i*xStep;
+      const y = pad.top + h - (v/max)*h;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Legend
+    const li = datasets.indexOf(ds);
+    ctx.beginPath(); ctx.arc(pad.left+w+12, pad.top+li*22+6, 5,0,Math.PI*2);
+    ctx.fillStyle = ds.color; ctx.fill();
+    ctx.fillStyle = '#94a3b8'; ctx.font='11px DM Sans,sans-serif'; ctx.textAlign='left';
+    ctx.fillText(ds.label, pad.left+w+22, pad.top+li*22+10);
+  });
+
+  // X labels
+  ctx.fillStyle='#475569'; ctx.font='10px DM Sans,sans-serif'; ctx.textAlign='center';
+  months.forEach((l,i) => { ctx.fillText(l, pad.left+i*xStep, pad.top+h+18); });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+setDate();
+renderTable('deals-table', deals);
+renderTable('ytd-table', topDeals);
+renderPipeline();
+renderActivities();
+setTimeout(() => { initMTDCharts(); }, 50);
+</script>
+</body>
+</html>
